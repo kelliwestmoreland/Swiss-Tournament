@@ -74,18 +74,20 @@ def playerStandings():
     standings = []
     db = connect()
     db_cursor = db.cursor()
-    db_cursor.execute("SELECT players.id, name \
-    				FROM players LEFT JOIN matches\
-       			 	ON players.id = matches.winner\
-    				ORDER BY players.id")
+    query = ("""SELECT players.id, name, count(matches.id) AS num 
+                FROM players LEFT JOIN matches \
+                ON players.id = matches.winner
+                ORDER BY players.id""");
+    db_cursor.execute
+    db.commit()
     result = db_cursor.fetchall()
 
 #    query = "SELECT * FROM players;"
  #   db_cursor.execute(query)
 #    player_id = db_cursor.fetchall()
     #for row in db_cursor.fetchall():
-    for i in range(len(players.id)):
-    	standings.append((row[0], str(row[1]), row[2], row[3])) #returns tuples of id, name, wins, matches
+#    for i in range(len(players.id)):
+ #   	standings.append((row[0], str(row[1]), row[2], row[3])) #returns tuples of id, name, wins, matches
     db.close()
     return standings
     #OR
