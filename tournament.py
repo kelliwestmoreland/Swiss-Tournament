@@ -22,7 +22,7 @@ def deleteMatches():
 
 def deletePlayers():
     """Remove all the player records from the database."""
-    db = connect #connect to database
+    db = connect() #connect to database
     db_cursor = db.cursor()
     query = "DELETE FROM players;"
     db_cursor.execute(query)
