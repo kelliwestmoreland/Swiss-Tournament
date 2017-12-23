@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#/usr/bin/env python
 # 
 # tournament.py -- implementation of a Swiss-system tournament
 #
@@ -33,7 +33,7 @@ def countPlayers():
     """Returns the number of players currently registered."""
     db = connect() #connect to database
     db_cursor = db.cursor() #added in to connect to database and execute cursor
-    query = "SELECT COUNT(id) AS num from players"; #using id as way to count players
+    query = "SELECT COUNT(*) FROM players;" #using id as way to count players
     db_cursor.execute(query) #added in to execute query
     results = db_cursor.fetchone() #returns players by one line
     db.close() 
@@ -42,6 +42,7 @@ def countPlayers():
     else:
     	return '0' #returns zero if no players are registered
 #   query = SELECT COUNT(*) FROM players; #added in to test
+#"SELECT COUNT(id) AS num from players";
 def registerPlayer(name):
     """Adds a player to the tournament database.
   
@@ -53,7 +54,7 @@ def registerPlayer(name):
     """
     db = connect() #connect to database
     db_cursor = db.cursor() #using cursor object to execute next command
-    query = "INSERT INTO players(name) VALUES('%s');" % name
+    query = "INSERT INTO players(name) VALUES('%s');" % name #we want to pass name in % name as a string %s
     db_cursor.execute#("INSERT INTO players(name) VALUES(%s)", (name,))
     db.commit() #commit to execut the insert function
     db.close() #close database connection
@@ -71,30 +72,30 @@ def playerStandings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
-    standings = []
+#    standings = []
     db = connect()
     db_cursor = db.cursor()
-    query = ("""SELECT players.id, name, count(matches.id) AS num 
-                FROM players LEFT JOIN matches \
-                ON players.id = matches.winner
-                ORDER BY players.id""");
+    query = """SELECT players.id, players.name, count(m.winner) as wins, 
+                    count(l.loser)+count(m.winner) as matches
+                FROM players
+                    LEFT JOIN matches as m
+                        ON players.id = m.winner
+                    LEFT JOIN matches as l
+                        ON players.id = l.loser
+                GROUP BY players.id
+                ORDER BY wins;"""
     db_cursor.execute
     db.commit()
-    result = db_cursor.fetchall()
-
-#    query = "SELECT * FROM players;"
- #   db_cursor.execute(query)
-#    player_id = db_cursor.fetchall()
-    #for row in db_cursor.fetchall():
-#    for i in range(len(players.id)):
- #   	standings.append((row[0], str(row[1]), row[2], row[3])) #returns tuples of id, name, wins, matches
-    db.close()
-    return standings
-    #OR
-    #standings = db.cursor.fetchall()
+    
+    #result = db_cursor.fetchall()
+   
+    #db = connect()
+    #db_cursor = db.cursor()
+    #query = "SELECT * FROM win_total";
+    #db_cursor.execute(query)
+    #win_total = db.cursor.fetchall()
     #db.close()
-    #return standings
-
+    #return win_total
 
 
 def reportMatch(winner, loser):
@@ -126,18 +127,34 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
-standings = playerStandings()
+#win_total = playerStandings()
+db = connect()
+db_cursor = db.cursor()
+query = """SELECT players.id as id1, players.name as name1  
+            FROM players, 
+            matches WHERE players.id=matches.winner
+              LEFT JOIN matches as n1
+                 ON players.id = n.winner
+              LEFT JOIN matches as i2
+                 ON players.id = i.winner
+            GROUP by players.id;"""
+db.commit()
 
-i = 0 
-result = [] 
-other_player = None
-for player in standings:
-	if (i % 2) == 0:
-		other_player = player
-	else:
-		pairs = (other_player[0], other_player[1], player[0], player[1])
-		result.append(pairs)
-	i += 1
+db.close()
+
+
+#WHILE EXISTS('SELECT * FROM players WHERE id NOT IN'('SELECT player.winner FROM matches') AND id NOT IN ('SELECT player.loser FROM matches')); 
+#i = 0 
+#result = [] 
+#other_player = None
+#for player in win_total:
+#	if (i % 2) == 0:
+#		other_player = player
+#	else:
+#		pairs = (other_player[0], other_player[1], player[0], player[1])
+#		result.append(pairs)
+#	i += 1
+#return standings
 #OR for review
 #    pairs = []
  #   while len(ranks) > 1:
